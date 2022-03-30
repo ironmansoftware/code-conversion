@@ -1,6 +1,6 @@
 # PowerShell to C# Code Conversion
 
-Orginally a feature of [PowerShell Pro Tools](https://docs.poshtools.com), this module provides the ability to convert between C# and PowerShell. 
+Orginally a feature of [PowerShell Pro Tools](https://docs.poshtools.com), this module provides the ability to convert between C# and PowerShell. No license required.
 
 # Installation
 

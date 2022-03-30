@@ -1,0 +1,1 @@
+﻿Get-WmiObject -Class "Msvm_ComputerSystem" -Namespace "root\virtualization" -Filter "name like 'test'" -ComputerName "myComputer" -Property "Description", "Status"

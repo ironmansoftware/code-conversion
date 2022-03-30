@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="PowerShell\CommandIntentMappings.json" />
+    <None Remove="PowerShell\GetBoundParameters.ps1" />
+    <None Remove="PowerShell\ProxyCommands\Add-Content.ps1" />
+    <None Remove="PowerShell\ProxyCommands\Get-Service.ps1" />
+    <None Remove="PowerShell\ProxyCommands\New-Object.ps1" />
+    <None Remove="PowerShell\ProxyCommands\Out-File.ps1" />
+    <None Remove="PowerShell\ProxyCommands\Start-Process.ps1" />
+    <None Remove="PowerShell\ProxyCommands\Write-Host.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="PowerShell\CommandIntentMappings.json" />
+    <EmbeddedResource Include="PowerShell\GetBoundParameters.ps1" />
+    <EmbeddedResource Include="PowerShell\ProxyCommands\Add-Content.ps1" />
+    <EmbeddedResource Include="PowerShell\ProxyCommands\Get-Service.ps1" />
+    <EmbeddedResource Include="PowerShell\ProxyCommands\New-Object.ps1" />
+    <EmbeddedResource Include="PowerShell\ProxyCommands\Out-File.ps1" />
+    <EmbeddedResource Include="PowerShell\ProxyCommands\Start-Process.ps1" />
+    <EmbeddedResource Include="PowerShell\ProxyCommands\Write-Host.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <Target Name="BuiltProjectOutputGroupDependencies" />
+  <Target Name="BuiltProjectOutputGroup" />
+  <Target Name="GetCopyToOutputDirectoryItems" />
+  <Target Name="SatelliteDllsProjectOutputGroup" />
+  <Target Name="DebugSymbolsProjectOutputGroup" />
+</Project>

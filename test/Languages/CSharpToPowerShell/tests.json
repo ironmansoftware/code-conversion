@@ -1,0 +1,102 @@
+﻿{
+  "Source": "CSharp",
+  "Target": "PowerShell",
+  "TestCases": [
+    {
+      "Name": "ArrayCreation",
+      "Description": "Array creation initializers"
+    },
+    {
+      "Name": "AssignVariable",
+      "Description": "Assign a constant to a variable"
+    },
+    {
+      "Name": "Cast",
+      "Description": "Cast operator"
+    },
+    {
+      "Name": "For",
+      "Description": "For loop"
+    },
+    {
+      "Name": "Foreach",
+      "Description": "Foreach loop"
+    },
+    {
+      "Name": "IncompleteCodeBlock",
+      "Description": "Converts an incomplete code block successfully."
+    },
+    {
+      "Name": "Indexer",
+      "Description": "Indexer property"
+    },
+    {
+      "Name": "If",
+      "Description": "If, Else If, Else"
+    },
+    {
+      "Name": "MethodDeclaration",
+      "Description": "Declare a method"
+    },
+    {
+      "Name": "MethodDeclarationWithArguments",
+      "Description": "Declare a method with arguments"
+    },
+    {
+      "Name": "ObjectCreation",
+      "Description": "Create an object"
+    },
+    {
+      "Name": "ObjectCreationWithArguments",
+      "Description": "Create an object with arugments"
+    },
+    {
+      "Name": "Operators",
+      "Description": "Common operators"
+    },
+    {
+      "Name": "PredefinedType",
+      "Description": "Execute a method on a predefined type (string, int, long, etc)"
+    },
+    {
+      "Name": "PropertyAccess",
+      "Description": "Access the property of a variable"
+    },
+    {
+      "Name": "PInvokeSignature",
+      "Description": "Platform invoke signature"
+    },
+    {
+      "Name": "Return",
+      "Description": "Return statement"
+    },
+    {
+      "Name": "Snippet",
+      "Description": "Declare a method outside of a class or namespace"
+    },
+    //{
+    //  "Name": "StaticMethod",
+    //  "Description": "Static method"
+    //},
+    {
+      "Name": "Switch",
+      "Description": "Switch statement"
+    },
+    {
+      "Name": "Throw",
+      "Description": "Throw statement"
+    },
+    {
+      "Name": "TryCatchFinally",
+      "Description": "Try, catch, finally"
+    },
+    {
+      "Name": "Using",
+      "Description": "Using statement"
+    },
+    {
+      "Name": "While",
+      "Description": "While loop with break"
+    }
+  ]
+}

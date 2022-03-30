@@ -1,0 +1,141 @@
+﻿{
+  "Source": "PowerShell",
+  "Target": "CSharp",
+  "TestCases": [
+    {
+      "Name": "ArrayCreation",
+      "Description": "Array creation initializers",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "AssignVariable",
+      "Description": "Assign a constant to a variable",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "Cast",
+      "Description": "Cast operator",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "GetCimInstance",
+      "Description": "Get-WmiObject and Get-CimInstance to Management classes",
+      "Category": "Cmdlets"
+    },
+    {
+      "Name": "GetProcess",
+      "Description": "Get-Process to Process",
+      "Category": "Cmdlets"
+    },
+    {
+      "Name": "For",
+      "Description": "For loop",
+      "Category": "Loops"
+    },
+    {
+      "Name": "Foreach",
+      "Description": "Foreach loop",
+      "Category": "Loops"
+    },
+    {
+      "Name": "If",
+      "Description": "If, Else If, Else",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "Indexer",
+      "Description": "Indexer property",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "Intent",
+      "Description": "Indexer property",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "InvokeUnknownCommand",
+      "Description": "Invokes a command using the PowerShell class when it can't be translated.",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "MethodDeclaration",
+      "Description": "Declare a method",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "MethodDeclarationWithArguments",
+      "Description": "Declare a method with arguments",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "ObjectCreation",
+      "Description": "Create an object",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "ObjectCreationWithArguments",
+      "Description": "Create an object with arugments",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "Operators",
+      "Description": "Common operators",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "PropertyAccess",
+      "Description": "Access the property of a variable",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "Return",
+      "Description": "Return statement",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "StaticMethod",
+      "Description": "Static method",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "StartProcess",
+      "Description": "Start-Process to Process.Start",
+      "Category": "Cmdlets"
+    },
+    {
+      "Name": "Switch",
+      "Description": "Switch statement",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "Throw",
+      "Description": "Throw statement",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "TryCatchFinally",
+      "Description": "Try, catch, finally",
+      "Category": "Syntax"
+    },
+    {
+      "Name": "While",
+      "Description": "While loop with break",
+      "Category": "Loops"
+    },
+    {
+      "Name": "WriteFile",
+      "Description": "Out-File to File.WriteAllText",
+      "Category": "Cmdlets"
+    },
+    {
+      "Name": "WriteHost",
+      "Description": "Write-Host to Console.WriteLine",
+      "Category": "Cmdlets"
+    },
+    {
+      "Name": "Linq",
+      "Description": "Pipeline to Linq",
+      "Category": "Syntax"
+    }
+  ]
+}

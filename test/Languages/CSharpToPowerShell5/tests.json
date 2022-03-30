@@ -1,0 +1,10 @@
+﻿{
+  "Source": "CSharp",
+  "Target": "PowerShell5",
+  "TestCases": [
+    {
+      "Name": "NewClass",
+      "Description": "Creates a new class"
+    }
+  ]
+}

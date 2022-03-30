@@ -1,0 +1,134 @@
+﻿// Parameter mappings:: powershell parameter: intent parameter
+[
+  {
+    "CommandName": "Stop-Service",
+    "Intent": "StopService",
+    "ParameterMappings": {
+      "Name": "Name",
+      "DisplayName": "DisplayName"
+    }
+  },
+  {
+    "CommandName": "Start-Service",
+    "Intent": "StartService",
+    "ParameterMappings": {
+      "Name": "Name",
+      "DisplayName": "DisplayName"
+    }
+  },
+  {
+    "CommandName": "Suspend-Service",
+    "Intent": "PauseService",
+    "ParameterMappings": {
+      "Name": "Name",
+      "DisplayName": "DisplayName"
+    }
+  },
+  {
+    "CommandName": "Restart-Service",
+    "Intent": "RestartService",
+    "ParameterMappings": {
+      "Name": "Name",
+      "DisplayName": "DisplayName"
+    }
+  },
+  {
+    "CommandName": "Get-WmiObject",
+    "Intent": "GetCimInstance",
+    "ParameterMappings": {
+      "Class": "Class",
+      "Property": "Properties",
+      "Filter": "Filter",
+      "Impersonation": "Impersonation",
+      "Authentication": "Authentication",
+      "ComputerName": "ComputerName",
+      "Credential": "Credential",
+      "Namespace": "Namespace"
+    }
+  },
+  {
+    "CommandName": "Start-Sleep",
+    "Intent": "StartSleep",
+    "ParameterMappings": {
+      "Seconds": "Seconds",
+      "Milliseconds": "Milliseconds"
+    }
+  },
+  {
+    "CommandName": "New-Variable",
+    "Intent": "NewVariable",
+    "ParameterMappings": {
+      "Name": "Name",
+      "Value": "Value"
+    }
+  },
+  {
+    "CommandName": "Test-Path",
+    "Intent": "TestPath",
+    "ParameterMappings": {
+      "Path": "Path"
+    }
+  },
+  {
+    "CommandName": "Remove-Variable",
+    "Intent": "RemoveVariable",
+    "ParameterMappings": {
+      "Name": "Name"
+    }
+  },
+  {
+    "CommandName": "Write-Error",
+    "Intent": "WriteError",
+    "ParameterMappings": {
+      "Message": "Message"
+    }
+  },
+  {
+    "CommandName": "Get-Process",
+    "Intent": "GetProcess",
+    "ParameterMappings": {
+      "Name": "Name",
+      "Id": "Id"
+    }
+  },
+  {
+    "CommandName": "Where-Object",
+    "Intent": "Where",
+    "ParameterMappings": {
+      "Property": "Property",
+      "Value": "Value",
+      "FilterScript": "Filter",
+      "EQ": "Equal"
+    }
+  },
+  {
+    "CommandName": "Select-Object",
+    "Intent": "Select",
+    "ParameterMappings": {
+      "Property": "Property"
+    }
+  },
+  {
+    "CommandName": "Sort-Object",
+    "Intent": "Sort",
+    "ParameterMappings": {
+      "Property": "Property",
+      "Descending": "Descending",
+      "Unique": "Unique"
+    }
+  },
+  {
+    "CommandName": "ForEach-Object",
+    "Intent": "ForEach",
+    "ParameterMappings": {
+      "Process": "Process"
+    }
+  },
+  {
+    "CommandName": "Write-Verbose",
+    "Intent": "WriteVerbose",
+    "ParameterMappings": {
+      "Message": "Message"
+    }
+  }
+]

@@ -3,3 +3,4 @@ src/obj
 test/bin
 test/obj
 .vs/
+output/

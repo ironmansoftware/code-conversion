@@ -13,13 +13,26 @@ Install-Module CodeConversion
 ## Convert from C# to PowerShell
 
 ```powershell
-ConvertTo-PowerShell -Code 'System.Diagnostics.Process.GetProcesses()'
-# Outputs: Get-Process
+Invoke-CodeConversion -CSharp 'class MyClass { 
+    public object MyMethod()
+    {
+        return new Object();
+    }
+}'
+<#
+Outputs: 
+
+function MyMethod
+{
+        return (New-Object -TypeName Object)
+}
+
+#>
 ```
 
 ## Convert from PowerShell to C#
 
 ```powershell
-ConvertTo-CSharp -Code 'Get-Process'
+Invoke-CodeConversion -PowerShell 'Get-Process'
 # Outputs: System.Diagnostics.Process.GetProcesses()
 ```

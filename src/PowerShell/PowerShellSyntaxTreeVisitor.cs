@@ -12,9 +12,18 @@ namespace CodeConverter.PowerShell
 
         public Node Visit(string code)
         {
-	        Token[] tokens;
-	        ParseError[] errors;
+            Token[] tokens;
+            ParseError[] errors;
             var ast = Parser.ParseInput(code, out tokens, out errors);
+            if (ast == null)
+            {
+                foreach (var error in errors)
+                {
+                    Console.Error.WriteLine(error);
+                }
+
+                return null;
+            }
             var visitor = new PowerShellAstVisitor();
             ast.Visit(visitor);
             return visitor.Node;
@@ -24,7 +33,7 @@ namespace CodeConverter.PowerShell
     internal class PowerShellAstVisitor : AstVisitor
     {
         private static Dictionary<TokenKind, BinaryOperator> _operatorMap;
-		private List<string> _functionDefinitions = new List<string>();
+        private List<string> _functionDefinitions = new List<string>();
 
         static PowerShellAstVisitor()
         {
@@ -32,17 +41,17 @@ namespace CodeConverter.PowerShell
             {
                 { TokenKind.And, BinaryOperator.And },
                 { TokenKind.Ieq, BinaryOperator.Equal },
-				{ TokenKind.Ine, BinaryOperator.NotEqual },
-				{ TokenKind.Not, BinaryOperator.Not},
-				{ TokenKind.Ilt, BinaryOperator.LessThan },
-				{ TokenKind.Or, BinaryOperator.Or },
-				{ TokenKind.Igt, BinaryOperator.GreaterThan },
-				{ TokenKind.Ige, BinaryOperator.GreaterThanEqualTo },
-				{ TokenKind.Ile, BinaryOperator.LessThanEqualTo },
-				{ TokenKind.Plus, BinaryOperator.Plus },
-				{ TokenKind.Minus, BinaryOperator.Minus },
-				{ TokenKind.Bor, BinaryOperator.Bor }
-			};
+                { TokenKind.Ine, BinaryOperator.NotEqual },
+                { TokenKind.Not, BinaryOperator.Not},
+                { TokenKind.Ilt, BinaryOperator.LessThan },
+                { TokenKind.Or, BinaryOperator.Or },
+                { TokenKind.Igt, BinaryOperator.GreaterThan },
+                { TokenKind.Ige, BinaryOperator.GreaterThanEqualTo },
+                { TokenKind.Ile, BinaryOperator.LessThanEqualTo },
+                { TokenKind.Plus, BinaryOperator.Plus },
+                { TokenKind.Minus, BinaryOperator.Minus },
+                { TokenKind.Bor, BinaryOperator.Bor }
+            };
         }
 
         private Node _currentNode;
@@ -53,37 +62,37 @@ namespace CodeConverter.PowerShell
             node?.Visit(this);
             return _currentNode;
         }
-		public override AstVisitAction VisitArrayLiteral(ArrayLiteralAst arrayLiteralAst)
-		{
-			var elements = new List<Node>();
-			foreach(var element in arrayLiteralAst.Elements)
-			{
-				elements.Add(VisitSyntaxNode(element));
-			}
-
-			_currentNode = new ArrayCreation(elements, string.Empty);
-
-			return AstVisitAction.SkipChildren;
-		}
-
-		public override AstVisitAction VisitAssignmentStatement(AssignmentStatementAst assignmentStatementAst)
+        public override AstVisitAction VisitArrayLiteral(ArrayLiteralAst arrayLiteralAst)
         {
-			if (assignmentStatementAst.Left is ConvertExpressionAst)
-			{
-				var varExpression = assignmentStatementAst.Left as ConvertExpressionAst;
-				if (varExpression.Attribute != null && varExpression.Child is VariableExpressionAst)
-				{
-					var typeName = varExpression.Attribute.TypeName.Name;
-					var name = (varExpression.Child as VariableExpressionAst).VariablePath.ToString();
-					var initializer = VisitSyntaxNode(assignmentStatementAst.Right);
-					_currentNode = new VariableDeclaration(typeName, new VariableDeclarator(name, initializer));
+            var elements = new List<Node>();
+            foreach (var element in arrayLiteralAst.Elements)
+            {
+                elements.Add(VisitSyntaxNode(element));
+            }
 
-					return AstVisitAction.SkipChildren;
-				}
-			}
+            _currentNode = new ArrayCreation(elements, string.Empty);
 
-			var left = VisitSyntaxNode(assignmentStatementAst.Left);
-			var right = VisitSyntaxNode(assignmentStatementAst.Right);
+            return AstVisitAction.SkipChildren;
+        }
+
+        public override AstVisitAction VisitAssignmentStatement(AssignmentStatementAst assignmentStatementAst)
+        {
+            if (assignmentStatementAst.Left is ConvertExpressionAst)
+            {
+                var varExpression = assignmentStatementAst.Left as ConvertExpressionAst;
+                if (varExpression.Attribute != null && varExpression.Child is VariableExpressionAst)
+                {
+                    var typeName = varExpression.Attribute.TypeName.Name;
+                    var name = (varExpression.Child as VariableExpressionAst).VariablePath.ToString();
+                    var initializer = VisitSyntaxNode(assignmentStatementAst.Right);
+                    _currentNode = new VariableDeclaration(typeName, new VariableDeclarator(name, initializer));
+
+                    return AstVisitAction.SkipChildren;
+                }
+            }
+
+            var left = VisitSyntaxNode(assignmentStatementAst.Left);
+            var right = VisitSyntaxNode(assignmentStatementAst.Right);
             _currentNode = new Assignment(left, right);
 
             return AstVisitAction.SkipChildren;
@@ -123,17 +132,17 @@ namespace CodeConverter.PowerShell
         public override AstVisitAction VisitCatchClause(CatchClauseAst catchClauseAst)
         {
             var body = VisitSyntaxNode(catchClauseAst.Body);
-			var block = body as Block;
-			if (block == null)
-			{
-				block = new Block(body);
-			}
+            var block = body as Block;
+            if (block == null)
+            {
+                block = new Block(body);
+            }
 
             var type = catchClauseAst.CatchTypes.FirstOrDefault();
             CatchDeclaration declaration = null;
             if (type != null)
             {
-				var myType = type.TypeName.Name;
+                var myType = type.TypeName.Name;
                 declaration = new CatchDeclaration(myType.ToString(), null);
             }
 
@@ -142,138 +151,138 @@ namespace CodeConverter.PowerShell
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitCommand(CommandAst commandAst)
-		{
-			var name = commandAst.GetCommandName();
-			var elements = commandAst.CommandElements.Skip(1).ToArray();
-			var arguments = new List<Argument>();
+        public override AstVisitAction VisitCommand(CommandAst commandAst)
+        {
+            var name = commandAst.GetCommandName();
+            var elements = commandAst.CommandElements.Skip(1).ToArray();
+            var arguments = new List<Argument>();
 
-			var parameters = ParameterFinder.FindBoundParameters(commandAst);
-			if (parameters != null)
-			{
-				foreach (var parameter in parameters)
-				{
-					if (parameter.Value is Ast)
-					{
-						var ast = parameter.Value as Ast;
-						var node = VisitSyntaxNode(ast);
-						var argument = new Argument(parameter.Key, node);
-						arguments.Add(argument);
-					}
-					else if (parameter.Value is ExpressionAst[])
-					{
-						var ast = (parameter.Value as ExpressionAst[]).First();
-						var node = VisitSyntaxNode(ast);
-						var argument = new Argument(parameter.Key, node);
-						arguments.Add(argument);
-					}
-					// This is happening because we are getting something from the pipeline
-					else if (parameter.Value == null)
-					{
-						var literal = new Literal("");//TODO: Need to represent null
-						var argument = new Argument(parameter.Key, literal);
-						arguments.Add(argument);
-					}
-					else
-					{
-						var literal = new Literal(parameter.Value.ToString());
-						var argument = new Argument(parameter.Key, literal);
-						arguments.Add(argument);
-					}
-				}
-			}
-			else
+            var parameters = ParameterFinder.FindBoundParameters(commandAst);
+            if (parameters != null)
             {
-	            for (var i = 0; i < elements.Length; i++)
-	            {
-		            var node = VisitSyntaxNode(elements[i]);
-		            var argument = node as Argument;
-		            if (argument != null && i < elements.Length - 1 && argument.Expression == null)
-		            {
-			            node = VisitSyntaxNode(elements[i + 1]);
-			            argument.Expression = node;
-			            i++;
-		            }
-		            else if (argument == null)
-		            {
-			            argument = new Argument(node);
-		            }
-		            arguments.Add(argument);
-	            }
+                foreach (var parameter in parameters)
+                {
+                    if (parameter.Value is Ast)
+                    {
+                        var ast = parameter.Value as Ast;
+                        var node = VisitSyntaxNode(ast);
+                        var argument = new Argument(parameter.Key, node);
+                        arguments.Add(argument);
+                    }
+                    else if (parameter.Value is ExpressionAst[])
+                    {
+                        var ast = (parameter.Value as ExpressionAst[]).First();
+                        var node = VisitSyntaxNode(ast);
+                        var argument = new Argument(parameter.Key, node);
+                        arguments.Add(argument);
+                    }
+                    // This is happening because we are getting something from the pipeline
+                    else if (parameter.Value == null)
+                    {
+                        var literal = new Literal("");//TODO: Need to represent null
+                        var argument = new Argument(parameter.Key, literal);
+                        arguments.Add(argument);
+                    }
+                    else
+                    {
+                        var literal = new Literal(parameter.Value.ToString());
+                        var argument = new Argument(parameter.Key, literal);
+                        arguments.Add(argument);
+                    }
+                }
+            }
+            else
+            {
+                for (var i = 0; i < elements.Length; i++)
+                {
+                    var node = VisitSyntaxNode(elements[i]);
+                    var argument = node as Argument;
+                    if (argument != null && i < elements.Length - 1 && argument.Expression == null)
+                    {
+                        node = VisitSyntaxNode(elements[i + 1]);
+                        argument.Expression = node;
+                        i++;
+                    }
+                    else if (argument == null)
+                    {
+                        argument = new Argument(node);
+                    }
+                    arguments.Add(argument);
+                }
             }
 
-			_currentNode = ConvertCommand(new Invocation(new IdentifierName(name), new ArgumentList(arguments)));
-			
-			if (_currentNode.Intent == null && !name.Equals("New-Object", StringComparison.OrdinalIgnoreCase) &&  !_functionDefinitions.Any(m => m.Equals(name, StringComparison.OrdinalIgnoreCase)))
-			{
-				var psAssignment = new VariableDeclaration("System.Management.Automation.PowerShell", new VariableDeclarator("powershell", new Invocation(new MemberAccess(new TypeExpression("System.Management.Automation.PowerShell"), "Create"), new ArgumentList())));
-				var addCommand = new Invocation(new MemberAccess(new IdentifierName("powershell"), "AddCommand"), new ArgumentList(new StringConstant(name)));
+            _currentNode = ConvertCommand(new Invocation(new IdentifierName(name), new ArgumentList(arguments)));
 
-				var statements = new List<Node> {addCommand};
-				foreach (var argument in arguments)
-				{
-					statements.Add(new Invocation(new MemberAccess(new IdentifierName("powershell"), "AddArgument"), new ArgumentList(argument)));
-				}
+            if (_currentNode.Intent == null && !name.Equals("New-Object", StringComparison.OrdinalIgnoreCase) && !_functionDefinitions.Any(m => m.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                var psAssignment = new VariableDeclaration("System.Management.Automation.PowerShell", new VariableDeclarator("powershell", new Invocation(new MemberAccess(new TypeExpression("System.Management.Automation.PowerShell"), "Create"), new ArgumentList())));
+                var addCommand = new Invocation(new MemberAccess(new IdentifierName("powershell"), "AddCommand"), new ArgumentList(new StringConstant(name)));
 
-				var invokeCommand = new Invocation(new MemberAccess(new IdentifierName("powershell"), "Invoke"), new ArgumentList());
-				statements.Add(invokeCommand);
+                var statements = new List<Node> { addCommand };
+                foreach (var argument in arguments)
+                {
+                    statements.Add(new Invocation(new MemberAccess(new IdentifierName("powershell"), "AddArgument"), new ArgumentList(argument)));
+                }
 
-				_currentNode = new Using(new Block(statements), psAssignment);
-			}
+                var invokeCommand = new Invocation(new MemberAccess(new IdentifierName("powershell"), "Invoke"), new ArgumentList());
+                statements.Add(invokeCommand);
 
-			return AstVisitAction.SkipChildren;
-		}
+                _currentNode = new Using(new Block(statements), psAssignment);
+            }
 
-		public Node ConvertCommand(Invocation node)
-		{
-			var commandIntentFactory = new CommandIntentFactory();
-			node.Intent = commandIntentFactory.DetermineCommandIntent(node);
+            return AstVisitAction.SkipChildren;
+        }
 
-			var name = node.Expression as IdentifierName;
-			if (name == null)
-				return node;
+        public Node ConvertCommand(Invocation node)
+        {
+            var commandIntentFactory = new CommandIntentFactory();
+            node.Intent = commandIntentFactory.DetermineCommandIntent(node);
 
-			if (name.Name.Equals("New-Object", StringComparison.OrdinalIgnoreCase))
-			{
-				var typeNameArg = node.Arguments.Arguments.Cast<Argument>().FirstOrDefault(m => m.Name.Equals("TypeName", StringComparison.OrdinalIgnoreCase));
-				var argumentListArgs = node.Arguments.Arguments.Cast<Argument>().FirstOrDefault(m => m.Name.Equals("ArgumentList", StringComparison.OrdinalIgnoreCase));
+            var name = node.Expression as IdentifierName;
+            if (name == null)
+                return node;
 
-				var typeName = typeNameArg?.Expression as StringConstant;
-				if (typeName == null)
-					return node;
+            if (name.Name.Equals("New-Object", StringComparison.OrdinalIgnoreCase))
+            {
+                var typeNameArg = node.Arguments.Arguments.Cast<Argument>().FirstOrDefault(m => m.Name.Equals("TypeName", StringComparison.OrdinalIgnoreCase));
+                var argumentListArgs = node.Arguments.Arguments.Cast<Argument>().FirstOrDefault(m => m.Name.Equals("ArgumentList", StringComparison.OrdinalIgnoreCase));
 
-				var argList = argumentListArgs?.Expression as ArgumentList;
-				if (argumentListArgs != null && argList == null)
-				{
-					argList = new ArgumentList(argumentListArgs.Expression);
-				}
+                var typeName = typeNameArg?.Expression as StringConstant;
+                if (typeName == null)
+                    return node;
 
-				//Unwind an array. We likely dont want this array
-				if (argList != null && argList.Arguments.Count() == 1 && argList.Arguments.All(m => m is ArrayCreation))
-				{
-					var array = argList.Arguments.Cast<ArrayCreation>().First();
-					argList = new ArgumentList(array.Initializer);
-				}
+                var argList = argumentListArgs?.Expression as ArgumentList;
+                if (argumentListArgs != null && argList == null)
+                {
+                    argList = new ArgumentList(argumentListArgs.Expression);
+                }
+
+                //Unwind an array. We likely dont want this array
+                if (argList != null && argList.Arguments.Count() == 1 && argList.Arguments.All(m => m is ArrayCreation))
+                {
+                    var array = argList.Arguments.Cast<ArrayCreation>().First();
+                    argList = new ArgumentList(array.Initializer);
+                }
 
 
-				return new ObjectCreation(typeName.Value, argList);
-			}
+                return new ObjectCreation(typeName.Value, argList);
+            }
 
-			return node;
-		}
+            return node;
+        }
 
-		public override AstVisitAction VisitCommandParameter(CommandParameterAst commandParameterAst)
-		{
-			Node expression = null;
-			if (commandParameterAst.Argument != null)
-				expression = VisitSyntaxNode(commandParameterAst.Argument);
+        public override AstVisitAction VisitCommandParameter(CommandParameterAst commandParameterAst)
+        {
+            Node expression = null;
+            if (commandParameterAst.Argument != null)
+                expression = VisitSyntaxNode(commandParameterAst.Argument);
 
-			_currentNode = new Argument(commandParameterAst.ParameterName, expression);
+            _currentNode = new Argument(commandParameterAst.ParameterName, expression);
 
-			return AstVisitAction.SkipChildren;
-		}
+            return AstVisitAction.SkipChildren;
+        }
 
-		public override AstVisitAction VisitConstantExpression(ConstantExpressionAst constantExpressionAst)
+        public override AstVisitAction VisitConstantExpression(ConstantExpressionAst constantExpressionAst)
         {
             _currentNode = new Literal(constantExpressionAst.Value.ToString());
             return AstVisitAction.SkipChildren;
@@ -285,35 +294,35 @@ namespace CodeConverter.PowerShell
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitConvertExpression(ConvertExpressionAst convertExpressionAst)
-		{
-			var expression = VisitSyntaxNode(convertExpressionAst.Child);
-			var type = convertExpressionAst.Type.TypeName.Name;
+        public override AstVisitAction VisitConvertExpression(ConvertExpressionAst convertExpressionAst)
+        {
+            var expression = VisitSyntaxNode(convertExpressionAst.Child);
+            var type = convertExpressionAst.Type.TypeName.Name;
 
-			_currentNode = new Cast(type, expression);
+            _currentNode = new Cast(type, expression);
 
-			return AstVisitAction.SkipChildren;
-		}
+            return AstVisitAction.SkipChildren;
+        }
 
-		public override AstVisitAction VisitForStatement(ForStatementAst forStatementAst)
-		{
-			var body = VisitSyntaxNode(forStatementAst.Body);
-			var condition = VisitSyntaxNode(forStatementAst.Condition);
-			var initializer = VisitSyntaxNode(forStatementAst.Initializer);
-			var iterator = VisitSyntaxNode(forStatementAst.Iterator);
+        public override AstVisitAction VisitForStatement(ForStatementAst forStatementAst)
+        {
+            var body = VisitSyntaxNode(forStatementAst.Body);
+            var condition = VisitSyntaxNode(forStatementAst.Condition);
+            var initializer = VisitSyntaxNode(forStatementAst.Initializer);
+            var iterator = VisitSyntaxNode(forStatementAst.Iterator);
 
-			_currentNode = new ForStatement(initializer, iterator, condition, body);
+            _currentNode = new ForStatement(initializer, iterator, condition, body);
 
-			return AstVisitAction.SkipChildren;
-		}
+            return AstVisitAction.SkipChildren;
+        }
 
-		public override AstVisitAction VisitForEachStatement(ForEachStatementAst forEachStatementAst)
+        public override AstVisitAction VisitForEachStatement(ForEachStatementAst forEachStatementAst)
         {
             var body = VisitSyntaxNode(forEachStatementAst.Body);
             var condition = VisitSyntaxNode(forEachStatementAst.Condition);
             var variable = VisitSyntaxNode(forEachStatementAst.Variable);
 
-			_currentNode = new ForEachStatement(variable as IdentifierName, condition, body);
+            _currentNode = new ForEachStatement(variable as IdentifierName, condition, body);
 
             return AstVisitAction.SkipChildren;
         }
@@ -324,9 +333,9 @@ namespace CodeConverter.PowerShell
             var name = functionDefinitionAst.Name;
             var parameters = new List<Parameter>();
 
-	        _functionDefinitions.Add(name);
+            _functionDefinitions.Add(name);
 
-			if (functionDefinitionAst.Parameters != null)
+            if (functionDefinitionAst.Parameters != null)
             {
                 foreach (var parameter in functionDefinitionAst.Parameters)
                 {
@@ -334,54 +343,54 @@ namespace CodeConverter.PowerShell
                 }
             }
 
-			if (functionDefinitionAst.Body.ParamBlock != null)
-			{
-				foreach (var parameter in functionDefinitionAst.Body.ParamBlock.Parameters)
-				{
-					parameters.Add(new Parameter(parameter.StaticType?.Name, parameter.Name.ToString().TrimStart('$')));
-				}
-			}
-           
+            if (functionDefinitionAst.Body.ParamBlock != null)
+            {
+                foreach (var parameter in functionDefinitionAst.Body.ParamBlock.Parameters)
+                {
+                    parameters.Add(new Parameter(parameter.StaticType?.Name, parameter.Name.ToString().TrimStart('$')));
+                }
+            }
+
             _currentNode = new MethodDeclaration(name, parameters, body, new[] { "public" }, new CodeConverter.Common.Attribute[0], "void");
 
             return AstVisitAction.SkipChildren;
         }
 
-	    public override AstVisitAction VisitHashtable(HashtableAst hashtableAst)
-	    {
-		    var members = new List<AnonymousTypeMember>();
+        public override AstVisitAction VisitHashtable(HashtableAst hashtableAst)
+        {
+            var members = new List<AnonymousTypeMember>();
 
-		    foreach (var kvp in hashtableAst.KeyValuePairs)
-		    {
-			    var anonymousTypeMember = new AnonymousTypeMember(kvp.Item1.ToString(), VisitSyntaxNode(kvp.Item2));
-			    members.Add(anonymousTypeMember);
-		    }
+            foreach (var kvp in hashtableAst.KeyValuePairs)
+            {
+                var anonymousTypeMember = new AnonymousTypeMember(kvp.Item1.ToString(), VisitSyntaxNode(kvp.Item2));
+                members.Add(anonymousTypeMember);
+            }
 
-			_currentNode = new AnonymousType(members);
+            _currentNode = new AnonymousType(members);
 
-		    return AstVisitAction.SkipChildren;
-		}
+            return AstVisitAction.SkipChildren;
+        }
 
-	    public override AstVisitAction VisitIfStatement(IfStatementAst ifStmtAst)
+        public override AstVisitAction VisitIfStatement(IfStatementAst ifStmtAst)
         {
             var firstCondition = ifStmtAst.Clauses.First();
             var condition = VisitSyntaxNode(firstCondition.Item1);
             var body = VisitSyntaxNode(firstCondition.Item2);
 
-			body = EnsureBlock(body);
+            body = EnsureBlock(body);
 
-			// If
-			var ifStatement = new IfStatement(condition, body);
+            // If
+            var ifStatement = new IfStatement(condition, body);
 
             var previousIf = ifStatement;
 
             // Else ifs
             foreach (var clause in ifStmtAst.Clauses.Skip(1))
             {
-				condition = VisitSyntaxNode(clause.Item1);
+                condition = VisitSyntaxNode(clause.Item1);
                 body = VisitSyntaxNode(clause.Item2);
-				body = EnsureBlock(body);
-				var nextCondition = new IfStatement(condition, body);
+                body = EnsureBlock(body);
+                var nextCondition = new IfStatement(condition, body);
                 previousIf.ElseClause = new ElseClause(nextCondition);
                 previousIf = nextCondition;
             }
@@ -390,7 +399,7 @@ namespace CodeConverter.PowerShell
             if (ifStmtAst.ElseClause != null)
             {
                 var statements = new List<Node>();
-                foreach(var statement in ifStmtAst.ElseClause.Statements)
+                foreach (var statement in ifStmtAst.ElseClause.Statements)
                 {
                     var statementNode = VisitSyntaxNode(statement);
                     statements.Add(statementNode);
@@ -404,36 +413,36 @@ namespace CodeConverter.PowerShell
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitIndexExpression(IndexExpressionAst indexExpressionAst)
-		{
-			var target = VisitSyntaxNode(indexExpressionAst.Target);
-			var index = VisitSyntaxNode(indexExpressionAst.Index);
+        public override AstVisitAction VisitIndexExpression(IndexExpressionAst indexExpressionAst)
+        {
+            var target = VisitSyntaxNode(indexExpressionAst.Target);
+            var index = VisitSyntaxNode(indexExpressionAst.Index);
 
-			_currentNode = new ElementAccess(target, new BracketedArgumentList(new ArgumentList(index)));
+            _currentNode = new ElementAccess(target, new BracketedArgumentList(new ArgumentList(index)));
 
-			return AstVisitAction.SkipChildren;
-		}
+            return AstVisitAction.SkipChildren;
+        }
 
-		public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
+        public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
         {
             var arguments = new List<Argument>();
 
-			if (methodCallAst.Arguments != null)
-			{
-				foreach (var argument in methodCallAst.Arguments)
-				{
-					var arg = VisitSyntaxNode(argument);
-					var ar = new Argument(arg);
-					arguments.Add(ar);
-				}
-			}
-           
+            if (methodCallAst.Arguments != null)
+            {
+                foreach (var argument in methodCallAst.Arguments)
+                {
+                    var arg = VisitSyntaxNode(argument);
+                    var ar = new Argument(arg);
+                    arguments.Add(ar);
+                }
+            }
+
 
             var expression = VisitSyntaxNode(methodCallAst.Expression);
 
             var methodName = methodCallAst.Member.ToString();
 
-			var memberAccess = new MemberAccess(expression, methodName);
+            var memberAccess = new MemberAccess(expression, methodName);
 
             var argumentList = new ArgumentList(arguments);
 
@@ -451,37 +460,37 @@ namespace CodeConverter.PowerShell
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)
-		{
-			var expression = VisitSyntaxNode(memberExpressionAst.Expression);
-			var member = VisitSyntaxNode(memberExpressionAst.Member);
+        public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)
+        {
+            var expression = VisitSyntaxNode(memberExpressionAst.Expression);
+            var member = VisitSyntaxNode(memberExpressionAst.Member);
 
-			if (member is StringConstant)
-			{
-				var str = member as StringConstant;
-				_currentNode = new MemberAccess(expression, str.Value);
-			}
-			
-			return AstVisitAction.SkipChildren; 
-		}
+            if (member is StringConstant)
+            {
+                var str = member as StringConstant;
+                _currentNode = new MemberAccess(expression, str.Value);
+            }
 
-		public override AstVisitAction VisitTypeExpression(TypeExpressionAst typeExpressionAst)
-		{
-			var name = typeExpressionAst.TypeName.Name;
+            return AstVisitAction.SkipChildren;
+        }
 
-			_currentNode = new TypeExpression(name);
+        public override AstVisitAction VisitTypeExpression(TypeExpressionAst typeExpressionAst)
+        {
+            var name = typeExpressionAst.TypeName.Name;
 
-			return AstVisitAction.SkipChildren;
-		}
+            _currentNode = new TypeExpression(name);
 
-		public override AstVisitAction VisitStringConstantExpression(StringConstantExpressionAst stringConstantExpressionAst)
+            return AstVisitAction.SkipChildren;
+        }
+
+        public override AstVisitAction VisitStringConstantExpression(StringConstantExpressionAst stringConstantExpressionAst)
         {
             _currentNode = new StringConstant(stringConstantExpressionAst.Value);
 
             return AstVisitAction.SkipChildren;
         }
 
-		
+
 
         public override AstVisitAction VisitExpandableStringExpression(ExpandableStringExpressionAst expandableStringExpressionAst)
         {
@@ -492,145 +501,145 @@ namespace CodeConverter.PowerShell
 
         public override AstVisitAction VisitReturnStatement(ReturnStatementAst returnStatementAst)
         {
-			var node = VisitSyntaxNode(returnStatementAst.Pipeline);
+            var node = VisitSyntaxNode(returnStatementAst.Pipeline);
             _currentNode = new ReturnStatement(node);
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitScriptBlock(ScriptBlockAst scriptBlockAst)
-		{
-			var statements = new List<Node>();
-
-			if (scriptBlockAst.BeginBlock != null)
-				foreach (var statement in scriptBlockAst.BeginBlock.Statements)
-				{
-					statements.Add(VisitSyntaxNode(statement));
-				}
-
-			if (scriptBlockAst.ProcessBlock != null)
-				foreach (var statement in scriptBlockAst.ProcessBlock.Statements)
-				{
-					statements.Add(VisitSyntaxNode(statement));
-				}
-
-			if (scriptBlockAst.EndBlock != null)
-				foreach (var statement in scriptBlockAst.EndBlock.Statements)
-				{
-					statements.Add(VisitSyntaxNode(statement));
-				}
-
-			_currentNode = new Block(statements);
-
-			return AstVisitAction.SkipChildren;
-		}
-
-		public override AstVisitAction VisitStatementBlock(StatementBlockAst statementBlockAst)
+        public override AstVisitAction VisitScriptBlock(ScriptBlockAst scriptBlockAst)
         {
             var statements = new List<Node>();
-            foreach(var statement in statementBlockAst.Statements)
-            {
-                statements.Add(VisitSyntaxNode(statement));
-            }
 
-			if (statements.Count() == 1)
-			{
-				_currentNode = statements.FirstOrDefault();
-			}
-			else
-			{
-				_currentNode = new Block(statements);
-			}
-            
+            if (scriptBlockAst.BeginBlock != null)
+                foreach (var statement in scriptBlockAst.BeginBlock.Statements)
+                {
+                    statements.Add(VisitSyntaxNode(statement));
+                }
+
+            if (scriptBlockAst.ProcessBlock != null)
+                foreach (var statement in scriptBlockAst.ProcessBlock.Statements)
+                {
+                    statements.Add(VisitSyntaxNode(statement));
+                }
+
+            if (scriptBlockAst.EndBlock != null)
+                foreach (var statement in scriptBlockAst.EndBlock.Statements)
+                {
+                    statements.Add(VisitSyntaxNode(statement));
+                }
+
+            _currentNode = new Block(statements);
 
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitSwitchStatement(SwitchStatementAst switchStatementAst)
-		{
-			var condition = VisitSyntaxNode(switchStatementAst.Condition);
+        public override AstVisitAction VisitStatementBlock(StatementBlockAst statementBlockAst)
+        {
+            var statements = new List<Node>();
+            foreach (var statement in statementBlockAst.Statements)
+            {
+                statements.Add(VisitSyntaxNode(statement));
+            }
 
-			var sections = new List<SwitchSection>();
+            if (statements.Count() == 1)
+            {
+                _currentNode = statements.FirstOrDefault();
+            }
+            else
+            {
+                _currentNode = new Block(statements);
+            }
 
-			foreach(var clause in switchStatementAst.Clauses)
-			{
-				var cond = VisitSyntaxNode(clause.Item1);
-				var body = VisitSyntaxNode(clause.Item2);
 
-				var block = new Block(body, new Break());
+            return AstVisitAction.SkipChildren;
+        }
 
-				var section = new SwitchSection(new[] { cond }, new[] { block });
+        public override AstVisitAction VisitSwitchStatement(SwitchStatementAst switchStatementAst)
+        {
+            var condition = VisitSyntaxNode(switchStatementAst.Condition);
 
-				sections.Add(section);
-			}
+            var sections = new List<SwitchSection>();
 
-			if (switchStatementAst.Default != null)
-			{
-				var body = VisitSyntaxNode(switchStatementAst.Default) as Block;
+            foreach (var clause in switchStatementAst.Clauses)
+            {
+                var cond = VisitSyntaxNode(clause.Item1);
+                var body = VisitSyntaxNode(clause.Item2);
 
-				var statements = body.Statements.ToList();
-				statements.Add(new Break());
+                var block = new Block(body, new Break());
 
-				var section = new SwitchSection(new[] { new IdentifierName("default") }, new[] { new Block(statements) });
-				sections.Add(section);
-			}
-			
+                var section = new SwitchSection(new[] { cond }, new[] { block });
 
-			_currentNode = new SwitchStatement(condition, sections);
+                sections.Add(section);
+            }
 
-			return AstVisitAction.SkipChildren;
-		}
+            if (switchStatementAst.Default != null)
+            {
+                var body = VisitSyntaxNode(switchStatementAst.Default) as Block;
 
-		public override AstVisitAction VisitTryStatement(TryStatementAst tryStatementAst)
+                var statements = body.Statements.ToList();
+                statements.Add(new Break());
+
+                var section = new SwitchSection(new[] { new IdentifierName("default") }, new[] { new Block(statements) });
+                sections.Add(section);
+            }
+
+
+            _currentNode = new SwitchStatement(condition, sections);
+
+            return AstVisitAction.SkipChildren;
+        }
+
+        public override AstVisitAction VisitTryStatement(TryStatementAst tryStatementAst)
         {
             var tryBody = VisitSyntaxNode(tryStatementAst.Body);
-			var body = tryBody as Block;
-			if (body == null)
-			{
-				body = new Block(tryBody);
-			}
+            var body = tryBody as Block;
+            if (body == null)
+            {
+                body = new Block(tryBody);
+            }
 
             var catches = new List<Catch>();
-            foreach(var catchClause in  tryStatementAst.CatchClauses)
+            foreach (var catchClause in tryStatementAst.CatchClauses)
             {
                 var catchNode = VisitSyntaxNode(catchClause) as Catch;
                 catches.Add(catchNode);
             }
 
-			if (tryStatementAst.Finally != null)
-			{
-				var fin = VisitSyntaxNode(tryStatementAst.Finally);
-				var finBody = fin as Block;
-				if (finBody == null)
-				{
-					finBody = new Block(fin);
-				}
+            if (tryStatementAst.Finally != null)
+            {
+                var fin = VisitSyntaxNode(tryStatementAst.Finally);
+                var finBody = fin as Block;
+                if (finBody == null)
+                {
+                    finBody = new Block(fin);
+                }
 
-				var fina = new Finally(finBody);
+                var fina = new Finally(finBody);
 
-				_currentNode = new Try(body, catches, fina);
-			}
+                _currentNode = new Try(body, catches, fina);
+            }
             else
-			{
-				_currentNode = new Try(body, catches);
-			}
+            {
+                _currentNode = new Try(body, catches);
+            }
 
-			
 
-            
+
+
 
             return AstVisitAction.SkipChildren;
         }
 
-		public override AstVisitAction VisitThrowStatement(ThrowStatementAst throwStatementAst)
-		{
-			var expression = VisitSyntaxNode(throwStatementAst.Pipeline);
+        public override AstVisitAction VisitThrowStatement(ThrowStatementAst throwStatementAst)
+        {
+            var expression = VisitSyntaxNode(throwStatementAst.Pipeline);
 
-			_currentNode = new Throw(expression);
+            _currentNode = new Throw(expression);
 
-			return AstVisitAction.SkipChildren;
-		}
+            return AstVisitAction.SkipChildren;
+        }
 
-		public override AstVisitAction VisitUnaryExpression(UnaryExpressionAst unaryExpressionAst)
+        public override AstVisitAction VisitUnaryExpression(UnaryExpressionAst unaryExpressionAst)
         {
             var child = VisitSyntaxNode(unaryExpressionAst.Child);
             if (unaryExpressionAst.TokenKind == TokenKind.PostfixPlusPlus)
@@ -658,11 +667,11 @@ namespace CodeConverter.PowerShell
             var body = VisitSyntaxNode(whileStatementAst.Body);
             var condition = VisitSyntaxNode(whileStatementAst.Condition);
 
-			var block = body as Block;
-			if (block == null)
-			{
-				block = new Block(body);
-			}
+            var block = body as Block;
+            if (block == null)
+            {
+                block = new Block(body);
+            }
 
             _currentNode = new While(condition, block);
 
@@ -676,28 +685,28 @@ namespace CodeConverter.PowerShell
             return AstVisitAction.SkipChildren;
         }
 
-	    public override AstVisitAction VisitPipeline(PipelineAst pipelineAst)
-	    {
-		    if (pipelineAst.PipelineElements.Count == 1)
-		    {
-			    var pipelineElement = pipelineAst.PipelineElements[0];
-			    _currentNode = VisitSyntaxNode(pipelineElement);
+        public override AstVisitAction VisitPipeline(PipelineAst pipelineAst)
+        {
+            if (pipelineAst.PipelineElements.Count == 1)
+            {
+                var pipelineElement = pipelineAst.PipelineElements[0];
+                _currentNode = VisitSyntaxNode(pipelineElement);
 
-				return AstVisitAction.SkipChildren;
-		    }
+                return AstVisitAction.SkipChildren;
+            }
 
-		    var elements = new List<Node>();
+            var elements = new List<Node>();
 
-		    foreach (var element in pipelineAst.PipelineElements)
-		    {
-			    var node = VisitSyntaxNode(element);
-			    elements.Add(node);
-		    }
+            foreach (var element in pipelineAst.PipelineElements)
+            {
+                var node = VisitSyntaxNode(element);
+                elements.Add(node);
+            }
 
-			_currentNode = new PipelineExpression(elements);
+            _currentNode = new PipelineExpression(elements);
 
-			return AstVisitAction.SkipChildren;
-	    }
+            return AstVisitAction.SkipChildren;
+        }
 
         public override AstVisitAction VisitVariableExpression(VariableExpressionAst variableExpressionAst)
         {
@@ -706,15 +715,15 @@ namespace CodeConverter.PowerShell
             return AstVisitAction.SkipChildren;
         }
 
-		private Node EnsureBlock(Node node)
-		{
-			var block = node as Block;
-			if (block == null)
-			{
-				return new Block(node);
-			}
-			return node;
-		}
-	}
+        private Node EnsureBlock(Node node)
+        {
+            var block = node as Block;
+            if (block == null)
+            {
+                return new Block(node);
+            }
+            return node;
+        }
+    }
 
 }

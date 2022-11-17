@@ -1,8 +1,10 @@
 if ($IsLinux) {
-    $Path = [IO.Path]::Join($PSScriptRoot, "linux-64", "CodeConversion")
+    $Folder = Join-Path $PSScriptRoot "linux-64"
+    $Path = Join-Path $Folder "CodeConversion"
 }
 else {
-    $Path = [IO.Path]::Join($PSScriptRoot, "win7-x64", "CodeConversion.exe")
+    $Folder = Join-Path $PSScriptRoot "win7-x64"
+    $Path = Join-Path $Folder "CodeConversion.exe"
 }
 
 function Invoke-CodeConversion {

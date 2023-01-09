@@ -8,10 +8,13 @@ namespace CodeConversion
     {
         [Option('i', "InputFile", Required = true, HelpText = "File to convert.", SetName = "File")]
         public string InputFile { get; set; }
+
         [Option('o', "OutputPath", Required = true, HelpText = "Output file.", SetName = "File")]
         public string OutputFile { get; set; }
+
         [Option("PowerShell", Required = true, HelpText = "PowerShell script block to convert to C#", SetName = "PowerShell")]
         public string PowerShell { get; set; }
+
         [Option("CSharp", Required = true, HelpText = "C# code to convert to PowerShell", SetName = "CSharp")]
         public string CSharp { get; set; }
     }
@@ -28,19 +31,10 @@ namespace CodeConversion
                 {
                     var output = o.OutputFile;
                     var fileInfo = new FileInfo(o.InputFile);
-
-                    if (fileInfo.Extension == ".cs")
-                    {
-                        var contents = File.ReadAllText(o.InputFile);
-                        var result = converter.Convert(contents, CodeConverter.Common.Language.PowerShell);
-                        File.WriteAllText(o.OutputFile, result);
-                    }
-                    else
-                    {
-                        var contents = File.ReadAllText(o.OutputFile);
-                        var result = converter.Convert(contents, CodeConverter.Common.Language.CSharp);
-                        File.WriteAllText(o.OutputFile, result);
-                    }
+                    var contents = File.ReadAllText(o.InputFile);
+                    var codeConverter = fileInfo.Extension == ".cs" ? CodeConverter.Common.Language.PowerShell : CodeConverter.Common.Language.CSharp;
+                    var result = converter.Convert(contents, codeConverter);
+                    File.WriteAllText(o.OutputFile, result);
                 }
                 else if (!string.IsNullOrEmpty(o.PowerShell))
                 {

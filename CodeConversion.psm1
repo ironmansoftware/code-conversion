@@ -21,7 +21,7 @@ function Invoke-CodeConversion {
 
     if ($PSCmdlet.ParameterSetName -eq 'File') {
 
-        & $Path --InputFile $InputFile --OutputFile $OutputFile
+        & $Path --InputFile $InputFile --OutputPath $OutputFile
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'PowerShell') {
         & $Path --PowerShell $PowerShell

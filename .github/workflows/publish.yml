@@ -33,4 +33,4 @@ jobs:
       run: |
         Publish-Module -Path .\CodeConversion -NuGetApiKey $ENV:PSGALLERY
       env:
-        PSGALLERY: ${{ secrets.API }}
+        PSGALLERY: ${{ secrets.APIKEY }}

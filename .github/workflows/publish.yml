@@ -1,0 +1,36 @@
+name: Publish
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    timeout-minutes: 20
+
+    runs-on: windows-latest 
+                            
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: nuget/setup-nuget@v1
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Build
+      shell: pwsh
+      run: |
+        dotnet publish -o .\CodeConversion
+
+    - name: Publish
+      shell: pwsh
+      run: |
+        Publish-Module -Path .\CodeConversion -NuGetApiKey $ENV:PSGALLERY
+      env:
+        PSGALLERY: ${{ secrets.API }}

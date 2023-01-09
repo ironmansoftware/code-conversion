@@ -1,6 +1,6 @@
 param($Configuration = 'Debug')
 
-$Path = Join-Path $PSScriptRoot "output" 
+$Path = Join-Path $PSScriptRoot "CodeConversion" 
 Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
 
 Push-Location $PSScriptRoot

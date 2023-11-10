@@ -1,7 +1,7 @@
-
 using System.IO;
 using CodeConverter;
 using CommandLine;
+
 namespace CodeConversion
 {
     public class Options
@@ -9,13 +9,13 @@ namespace CodeConversion
         [Option('i', "InputFile", Required = true, HelpText = "File to convert.", SetName = "File")]
         public string InputFile { get; set; }
 
-        [Option('o', "OutputPath", Required = true, HelpText = "Output file.", SetName = "File")]
+        [Option('o', "OutputFile", Required = true, HelpText = "Output file.", SetName = "File")]
         public string OutputFile { get; set; }
 
-        [Option("PowerShell", Required = true, HelpText = "PowerShell script block to convert to C#", SetName = "PowerShell")]
+        [Option("PowerShell", HelpText = "PowerShell script block to convert to C#", SetName = "PowerShell")]
         public string PowerShell { get; set; }
 
-        [Option("CSharp", Required = true, HelpText = "C# code to convert to PowerShell", SetName = "CSharp")]
+        [Option("CSharp", HelpText = "C# code to convert to PowerShell", SetName = "CSharp")]
         public string CSharp { get; set; }
     }
 
